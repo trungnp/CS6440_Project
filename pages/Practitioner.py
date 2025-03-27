@@ -4,7 +4,6 @@ import dateutil.relativedelta
 import fhirpy.base.exceptions
 import pandas as pd
 import streamlit as st
-import streamlit_calendar
 
 import utils
 

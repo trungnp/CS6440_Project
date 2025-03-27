@@ -1,6 +1,5 @@
 import pandas as pd
 import streamlit as st
-from streamlit_calendar import calendar
 from datetime import datetime, timedelta
 import smtplib
 from email.mime.text import MIMEText
