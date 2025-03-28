@@ -304,6 +304,7 @@ def render_search_patient_form():
                                 patient = patient[0]
 
                         st.session_state['patient'] = patient
+                        st.rerun()
 
             search_patient_form()
         else:
