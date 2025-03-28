@@ -254,7 +254,6 @@ def search_practitioner(id=None):
     return []
 
 
-@st.fragment()
 def read_schedule_from_csv():
     try:
         return pd.read_csv("schedule.csv", header=0)
@@ -264,6 +263,7 @@ def read_schedule_from_csv():
         return None
 
 
+@st.fragment()
 def render_search_patient_form():
     patient = None
     patient_l, patient_r = st.columns([0.5, 3.5])
