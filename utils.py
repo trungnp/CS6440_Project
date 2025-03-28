@@ -236,6 +236,7 @@ def check_and_send_email():
         # else:
         #     st.write(f"  Notification date has passed")
 
+
 @st.cache_data(ttl=600)
 def search_practitioner(id=None):
     """
@@ -309,7 +310,7 @@ def render_search_patient_form():
 
 
 def render_search_practitioner_form():
-    practitioner_id = st.session_state['practitioner_id'] if 'practitioner_id' in st.session_state else None
+    # practitioner_id = st.session_state['practitioner_id'] if 'practitioner_id' in st.session_state else None
     pract_l, pract_r = st.columns([0.5, 3.5])
     with pract_l:
         has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
@@ -332,4 +333,4 @@ def render_search_practitioner_form():
             practitioner_ids = search_practitioner()
             practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
-    st.session_state['practitioner_id'] = practitioner_id
+        st.session_state['practitioner_id'] = practitioner_id
