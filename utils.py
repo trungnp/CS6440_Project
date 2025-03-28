@@ -301,13 +301,15 @@ def render_search_patient_form():
                         else:
                             patient = patient[0]
 
+            st.session_state['patient'] = patient
+
         else:
             patients = search_patient()
             patients_ids = [patient["id"] for patient in patients]
             patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
             patient = patients[patients_ids.index(patient)]
 
-    st.session_state['patient'] = patient
+            st.session_state['patient'] = patient
 
 
 def render_search_practitioner_form():
