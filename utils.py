@@ -309,7 +309,7 @@ def render_search_patient_form():
 
 
 def render_search_practitioner_form():
-    practitioner_id = None if 'practitioner_id' not in st.session_state else st.session_state['practitioner_id']
+    practitioner_id = None
     pract_l, pract_r = st.columns([0.5, 3.5])
     with pract_l:
         idx = 0 if practitioner_id else 1
