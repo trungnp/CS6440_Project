@@ -358,8 +358,7 @@ st.markdown("You are logged in as **Clinician**")
 practitioner_id = None
 pract_l, pract_r = st.columns([0.5, 3.5])
 with pract_l:
-    idx = 0 if practitioner_id else 1
-    has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=idx, horizontal=True)
+    has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
 with pract_r:
     if has_practitioner_id == "Yes":
         with st.form(key='practitioner_form'):
@@ -368,7 +367,6 @@ with pract_r:
             if submit_practitioner:
                 if practitioner_id_input:
                     practitioner_id = utils.search_practitioner(practitioner_id_input)
-                    st.session_state['practitioner_id'] = practitioner_id
                     if not practitioner_id:
                         st.error("No Practitioner found with the given ID.")
                         st.stop()
@@ -379,8 +377,10 @@ with pract_r:
         practitioner_ids = utils.search_practitioner()
         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
+st.session_state['practitioner_id'] = practitioner_id
+
 patient = None
-if practitioner_id:
+if st.session_state['practitioner_id']:
     patient_l, patient_r = st.columns([0.5, 3.5])
     with patient_l:
         has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
