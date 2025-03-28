@@ -8,6 +8,7 @@ import streamlit as st
 import utils
 
 st.set_page_config(page_title="CDC Immunization Schedule Reminder", layout="wide")
+st.markdown("You are logged in as **Clinician**")
 client = utils.get_fhir_client()
 
 # CDC group identifier
