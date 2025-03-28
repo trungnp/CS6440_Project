@@ -285,16 +285,19 @@ def render_search_patient_form():
                 if submit_patient:
                     if patient_id and (f_name or l_name or dob):
                         st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
+                        st.stop()
                     elif patient_id:
                         patient = search_patient(id=patient_id)
                         if not patient:
                             st.error("No Patients found with the given ID.")
+                            st.stop()
                         else:
                             patient = patient[0]
                     elif f_name and l_name and dob:
                         patient = search_patient(first_name=f_name, last_name=l_name, dob=dob)
                         if not patient:
                             st.error("No Patients found with the given information.")
+                            st.stop()
                         else:
                             patient = patient[0]
 
@@ -323,8 +326,10 @@ def render_search_practitioner_form():
                         practitioner_id = search_practitioner(practitioner_id_input)
                         if not practitioner_id:
                             st.error("No Practitioner found with the given ID.")
+                            st.stop()
                     else:
                         st.error("Please enter a Practitioner ID.")
+                        st.stop()
         else:
             practitioner_ids = search_practitioner()
             practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
