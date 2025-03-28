@@ -356,8 +356,8 @@ st.title("CDC Immunization Schedule Reminder")
 st.markdown("You are logged in as **Clinician**")
 
 utils.render_search_practitioner_form()
-practitioner_id = st.session_state['practitioner_id']
-patient = None
+practitioner_id = st.session_state['practitioner_id'] if 'practitioner_id' in st.session_state else None
+patient = st.session_state['patient'] if 'patient' in st.session_state else None
 if practitioner_id is not None:
     utils.render_search_patient_form()
     patient = st.session_state['patient']
