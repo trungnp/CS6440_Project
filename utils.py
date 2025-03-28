@@ -254,7 +254,7 @@ def search_practitioner(id=None):
     return []
 
 
-st.fragment()
+@st.fragment()
 def read_schedule_from_csv():
     try:
         return pd.read_csv("schedule.csv", header=0)
