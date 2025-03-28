@@ -355,109 +355,112 @@ def fetch_cdc_schedule_from_fhir():
 st.title("CDC Immunization Schedule Reminder")
 st.markdown("You are logged in as **Clinician**")
 
-practitioner_id = None if 'practitioner_id' not in st.session_state else st.session_state['practitioner_id']
-pract_l, pract_r = st.columns([0.5, 3.5])
-with pract_l:
-    has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
-with pract_r:
-    if has_practitioner_id == "Yes":
-        with st.form(key='practitioner_form'):
-            practitioner_id_input = st.text_input("Enter Practitioner ID")
-            submit_practitioner = st.form_submit_button("Search Practitioner")
-            if submit_practitioner:
-                if practitioner_id_input:
-                    practitioner_id = utils.search_practitioner(practitioner_id_input)
-                    if not practitioner_id:
-                        st.error("No Practitioner found with the given ID.")
-                        st.stop()
+utils.render_search_practitioner_form()
+practitioner_id = st.session_state['practitioner_id']
+# pract_l, pract_r = st.columns([0.5, 3.5])
+# with pract_l:
+#     has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
+# with pract_r:
+#     if has_practitioner_id == "Yes":
+#         with st.form(key='practitioner_form'):
+#             practitioner_id_input = st.text_input("Enter Practitioner ID")
+#             submit_practitioner = st.form_submit_button("Search Practitioner")
+#             if submit_practitioner:
+#                 if practitioner_id_input:
+#                     practitioner_id = utils.search_practitioner(practitioner_id_input)
+#                     if not practitioner_id:
+#                         st.error("No Practitioner found with the given ID.")
+#                         st.stop()
+#                 else:
+#                     st.error("Please enter a Practitioner ID.")
+#                     st.stop()
+#     else:
+#         practitioner_ids = utils.search_practitioner()
+#         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
+
+if practitioner_id:
+    patient = utils.render_search_patient_form()
+    # patient_l, patient_r = st.columns([0.5, 3.5])
+    # with patient_l:
+    #     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
+    # with patient_r:
+    #     if has_patient_id == "Yes":
+    #         with st.form(key='patient_form'):
+    #             patient_id = st.text_input("Enter Patient ID")
+    #             st.markdown("OR")
+    #             f, l, d = st.columns(3)
+    #             with f:
+    #                 f_name = st.text_input("First Name")
+    #             with l:
+    #                 l_name = st.text_input("Last Name")
+    #             with d:
+    #                 dob = st.date_input(label="Date of Birth", min_value=datetime(1900, 1, 1), max_value=datetime.now(), value=None)
+    #             submit_patient = st.form_submit_button("Search Patient")
+    #             if submit_patient:
+    #                 if patient_id and (f_name or l_name or dob):
+    #                     st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
+    #                 elif patient_id:
+    #                     patient = utils.search_patient(id=patient_id)
+    #                     if not patient:
+    #                         st.error("No Patients found with the given ID.")
+    #                     else:
+    #                         patient = patient[0]
+    #                 elif f_name and l_name and dob:
+    #                     patient = utils.search_patient(first_name=f_name, last_name=l_name, dob=dob)
+    #                     if not patient:
+    #                         st.error("No Patients found with the given information.")
+    #                     else:
+    #                         patient = patient[0]
+    #
+    #     else:
+    #         patients = utils.search_patient()
+    #         patients_ids = [patient["id"] for patient in patients]
+    #         patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
+    #         patient = patients[patients_ids.index(patient)]
+
+    if patient is not None:
+        results = assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=False)
+        results_as_dict = [
+            {
+                "vaccine": rec["vaccineCode"][0]["coding"][0]["display"],
+                "disease": rec["targetDisease"][0]["coding"][0]["display"],
+                "description": rec["description"],
+                "recommended_date": ' - '.join([i['value'].replace('-', '/') for i in rec["dateCriterion"]]),
+                "dose": rec["doseNumberPositiveInt"],
+                "series": rec["seriesDosesPositiveInt"],
+            }
+            for result in results for rec in result["recommendation"]
+        ]
+
+
+        @st.fragment
+        def display_schedule(results, results_as_dict, patient, practitioner_id):
+            st.header("Immunization Recommendation Schedule")
+            ident_col, patient_col, first_col, last_col, dob_col, date_col = st.columns(6)
+            with ident_col:
+                st.markdown(f'Group Identifier: **{results[0]["identifier"][0]["value"]}**', unsafe_allow_html=True)
+            with patient_col:
+                st.write(f'Patient: **{results[0]["patient"]["reference"]}**')
+            with first_col:
+                st.write(f'Patient First Name: **{patient["name"][0]["given"][0]}**')
+            with last_col:
+                st.write(f'Patient Last Name: **{patient["name"][0]["family"]}**')
+            with dob_col:
+                st.write(f'Patient DOB: **{patient["birthDate"]}**')
+            with date_col:
+                st.write(f'Created Date: **{results[0]["date"]}**')
+            df = pd.DataFrame(results_as_dict).sort_values("recommended_date")
+            st.dataframe(df, hide_index=True)
+
+            if st.button("Assign Schedule to Patient"):
+                if patient['id'] and practitioner_id:
+                    assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=True, do_delete=True)
+                    st.success("Immunization schedule assigned to the Patient.")
                 else:
-                    st.error("Please enter a Practitioner ID.")
-                    st.stop()
-    else:
-        practitioner_ids = utils.search_practitioner()
-        practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
+                    st.error("Please select a Patient and Practitioner to assign the schedule.")
 
-st.session_state['practitioner_id'] = practitioner_id
-
-patient = None
-if st.session_state['practitioner_id']:
-    patient_l, patient_r = st.columns([0.5, 3.5])
-    with patient_l:
-        has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
-    with patient_r:
-        if has_patient_id == "Yes":
-            with st.form(key='patient_form'):
-                patient_id = st.text_input("Enter Patient ID")
-                st.markdown("OR")
-                f, l, d = st.columns(3)
-                with f:
-                    f_name = st.text_input("First Name")
-                with l:
-                    l_name = st.text_input("Last Name")
-                with d:
-                    dob = st.date_input(label="Date of Birth", min_value=datetime(1900, 1, 1), max_value=datetime.now(), value=None)
-                submit_patient = st.form_submit_button("Search Patient")
-                if submit_patient:
-                    if patient_id and (f_name or l_name or dob):
-                        st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
-                    elif patient_id:
-                        patient = utils.search_patient(id=patient_id)
-                        if not patient:
-                            st.error("No Patients found with the given ID.")
-                        else:
-                            patient = patient[0]
-                    elif f_name and l_name and dob:
-                        patient = utils.search_patient(first_name=f_name, last_name=l_name, dob=dob)
-                        if not patient:
-                            st.error("No Patients found with the given information.")
-                        else:
-                            patient = patient[0]
-
-        else:
-            patients = utils.search_patient()
-            patients_ids = [patient["id"] for patient in patients]
-            patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
-            patient = patients[patients_ids.index(patient)]
-
-if patient is not None:
-    results = assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=False)
-    results_as_dict = [
-        {
-            "vaccine": rec["vaccineCode"][0]["coding"][0]["display"],
-            "disease": rec["targetDisease"][0]["coding"][0]["display"],
-            "description": rec["description"],
-            "recommended_date": ' - '.join([i['value'].replace('-', '/') for i in rec["dateCriterion"]]),
-            "dose": rec["doseNumberPositiveInt"],
-            "series": rec["seriesDosesPositiveInt"],
-        }
-        for result in results for rec in result["recommendation"]
-    ]
-
-
-    @st.fragment
-    def display_schedule(results, results_as_dict, patient, practitioner_id):
-        st.header("Immunization Recommendation Schedule")
-        ident_col, patient_col, dob_col, date_col = st.columns(4)
-        with ident_col:
-            st.markdown(f'Group Identifier: **{results[0]["identifier"][0]["value"]}**', unsafe_allow_html=True)
-        with patient_col:
-            st.write(f'Patient: **{results[0]["patient"]["reference"]}**')
-        with dob_col:
-            st.write(f'Patient DOB: **{patient["birthDate"]}**')
-        with date_col:
-            st.write(f'Created Date: **{results[0]["date"]}**')
-        df = pd.DataFrame(results_as_dict).sort_values("recommended_date")
-        st.dataframe(df, hide_index=True)
-
-        if st.button("Assign Schedule to Patient"):
-            if patient['id'] and practitioner_id:
-                assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=True, do_delete=True)
-                st.success("Immunization schedule assigned to the Patient.")
-            else:
-                st.error("Please select a Patient and Practitioner to assign the schedule.")
-
-    schedule, health_record = st.tabs(["Immunization Schedule", "Health Record Chart"])
-    with schedule:
-        display_schedule(results, results_as_dict, patient, practitioner_id)
-    with health_record:
-        st.write("Health Record Chart")
+        schedule, health_record = st.tabs(["Immunization Schedule", "Health Record Chart"])
+        with schedule:
+            display_schedule(results, results_as_dict, patient, practitioner_id)
+        with health_record:
+            st.write("Health Record Chart")
