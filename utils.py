@@ -236,6 +236,7 @@ def check_and_send_email():
         # else:
         #     st.write(f"  Notification date has passed")
 
+@st.cache_data(ttl=600)
 def search_practitioner(id=None):
     """
     Search for practitioners by name or identifier.
@@ -333,4 +334,4 @@ def render_search_practitioner_form():
             practitioner_ids = search_practitioner()
             practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
-    st.session_state['practitioner_id'] = practitioner_id
+        st.session_state['practitioner_id'] = practitioner_id
