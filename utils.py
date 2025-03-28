@@ -312,8 +312,7 @@ def render_search_practitioner_form():
     practitioner_id = st.session_state['practitioner_id'] if 'practitioner_id' in st.session_state else None
     pract_l, pract_r = st.columns([0.5, 3.5])
     with pract_l:
-        idx = 0 if practitioner_id else 1
-        has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=idx, horizontal=True)
+        has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
     with pract_r:
         if has_practitioner_id == "Yes":
             with st.form(key='practitioner_form'):
