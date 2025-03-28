@@ -355,7 +355,7 @@ def fetch_cdc_schedule_from_fhir():
 st.title("CDC Immunization Schedule Reminder")
 st.markdown("You are logged in as **Clinician**")
 
-practitioner_id = None
+practitioner_id = None if 'practitioner_id' not in st.session_state else st.session_state['practitioner_id']
 pract_l, pract_r = st.columns([0.5, 3.5])
 with pract_l:
     has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
