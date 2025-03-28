@@ -369,7 +369,7 @@ def fetch_cdc_schedule_from_fhir():
 
 
 # Streamlit app
-st.title("CDC Immunization Schedule Reminder For Children Under 18")
+st.title("CDC Immunization Schedule Reminder")
 pract_l, pract_r = st.columns([0.5, 3.5])
 practitioner_id = None
 with pract_l:
@@ -458,38 +458,7 @@ if patient:
         with date_col:
             st.write(f'Created Date: **{results[0]["date"]}**')
         df = pd.DataFrame(results_as_dict).sort_values("recommended_date")
-        # st.dataframe(df, hide_index=True)
-        # events = []
-        # for _, row in df.iterrows():
-        #     date_range = row["recommended_date"].replace("/", "-").split(" - ")
-        #     events.append({
-        #         "title": row['vaccine'],
-        #         "start": date_range[0]+"T00:00:00",
-        #         "end": date_range[1]+"T23:59:59" if len(date_range) > 1 else date_range[0]+"T23:59:59",
-        #         "description": row["description"],
-        #         "allDay": True,
-        #         "extendedProps": {
-        #             "disease": row["disease"],
-        #             "dose": row["dose"],
-        #             "series": row["series"],
-        #             "description": row["description"]
-        #         }
-        #     })
-        # utils.display_calendar(events)
-        # scheule_view_mode = st.selectbox("View Mode", ["Table", "Calendar"], index=0)
-        # if scheule_view_mode == "Table":
         st.dataframe(df, hide_index=True)
-        # else:
-        #     utils.display_calendar(events)
-
-        # with st.form(key='assign_schedule'):
-        #     assign = st.form_submit_button("Assign Schedule to Patient")
-        #     if assign:
-        #         if patient['id'] and practitioner_id:
-        #             assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=True)
-        #             st.success("Immunization schedule assigned to the Patient.")
-        #         else:
-        #             st.error("Please select a Patient and Practitioner to assign the schedule.")
 
         if st.button("Assign Schedule to Patient"):
             if patient['id'] and practitioner_id:
