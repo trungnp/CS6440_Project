@@ -12,6 +12,9 @@ def get_fhir_client():
     return st.session_state.client
 
 
+client = get_fhir_client()
+
+
 def is_over_18(dob: datetime):
     # Current date: March 19, 2025
     current_date = datetime.now()
