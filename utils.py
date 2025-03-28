@@ -3,6 +3,7 @@ import streamlit as st
 from datetime import datetime, timedelta
 import smtplib
 from email.mime.text import MIMEText
+from fhirpy import SyncFHIRClient
 
 
 def get_fhir_client():
