@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 
 import streamlit as st
+
+import utils
 from utils import search_patient, display_calendar, check_and_send_email, write_schedule_to_csv, send_email
 import pandas as pd
 import re
@@ -28,30 +30,31 @@ def search_immunization_schedule(patient_id):
     res = [s.serialize() for s in schedule]
     return res
 
+patient = utils.render_search_patient_form()
 
-patient = None
-patient_l, patient_r = st.columns([1, 3])
-with patient_l:
-    has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
-with patient_r:
-    if has_patient_id == "Yes":
-        with st.form(key='patient_form'):
-            patient_id = st.text_input("Enter Patient ID")
-            submit_patient = st.form_submit_button("Search Patient")
-            if submit_patient:
-                if patient_id:
-                    patient = search_patient(id=patient_id)
-                    if not patient:
-                        st.error("No Patients found with the given ID.")
-                    else:
-                        patient = patient[0]
-                else:
-                    st.error("Please enter a Patient ID.")
-    else:
-        patients = search_patient()
-        patients_ids = [patient["id"] for patient in patients]
-        patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
-        patient = patients[patients_ids.index(patient)]
+# patient = None
+# patient_l, patient_r = st.columns([1, 3])
+# with patient_l:
+#     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
+# with patient_r:
+#     if has_patient_id == "Yes":
+#         with st.form(key='patient_form'):
+#             patient_id = st.text_input("Enter Patient ID")
+#             submit_patient = st.form_submit_button("Search Patient")
+#             if submit_patient:
+#                 if patient_id:
+#                     patient = search_patient(id=patient_id)
+#                     if not patient:
+#                         st.error("No Patients found with the given ID.")
+#                     else:
+#                         patient = patient[0]
+#                 else:
+#                     st.error("Please enter a Patient ID.")
+#     else:
+#         patients = search_patient()
+#         patients_ids = [patient["id"] for patient in patients]
+#         patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
+#         patient = patients[patients_ids.index(patient)]
 
 if patient:
     schedule = search_immunization_schedule(patient['id'])
