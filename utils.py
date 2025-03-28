@@ -236,6 +236,23 @@ def check_and_send_email():
         # else:
         #     st.write(f"  Notification date has passed")
 
+@st.cache_data(ttl=600)
+def search_practitioner(id=None):
+    """
+    Search for practitioners by name or identifier.
+
+    :param _id: The id of the practitioner.
+    """
+    search_params = {}
+    if id:
+        search_params['_id'] = id
+
+    practitioners = client.resources('Practitioner').search(**search_params).limit(10).fetch()
+    if practitioners:
+        practitioner_ids = [practitioner['id'] for practitioner in practitioners]
+        return practitioner_ids
+    return []
+
 
 st.fragment()
 def read_schedule_from_csv():

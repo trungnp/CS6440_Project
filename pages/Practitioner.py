@@ -223,23 +223,6 @@ def search_patients_by_practitioner(practitioner_id):
     return patients if patients else []
 
 
-@st.cache_data(ttl=600)
-def search_practitioner(id=None):
-    """
-    Search for practitioners by name or identifier.
-
-    :param _id: The id of the practitioner.
-    """
-    search_params = {}
-    if id:
-        search_params['_id'] = id
-
-    practitioners = client.resources('Practitioner').search(**search_params).limit(10).fetch()
-    if practitioners:
-        practitioner_ids = [practitioner['id'] for practitioner in practitioners]
-        return practitioner_ids
-    return []
-
 
 # @st.cache_data(ttl=600)
 # def search_patient(count=10, under_age=18, id=None):
