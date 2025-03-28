@@ -270,35 +270,39 @@ def render_search_patient_form():
         has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
     with patient_r:
         if has_patient_id == "Yes":
-            with st.form(key='patient_form'):
-                patient_id = st.text_input("Enter Patient ID")
-                st.markdown("OR")
-                f, l, d = st.columns(3)
-                with f:
-                    f_name = st.text_input("First Name")
-                with l:
-                    l_name = st.text_input("Last Name")
-                with d:
-                    dob = st.date_input(label="Date of Birth", min_value=datetime(1900, 1, 1), max_value=datetime.now(), value=None)
-                submit_patient = st.form_submit_button("Search Patient")
-                if submit_patient:
-                    if patient_id and (f_name or l_name or dob):
-                        st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
-                        st.stop()
-                    elif patient_id:
-                        patient = search_patient(id=patient_id)
-                        if not patient:
-                            st.error("No Patients found with the given ID.")
+            st.fragment()
+            def patient_form():
+                with st.form(key='patient_form'):
+                    patient_id = st.text_input("Enter Patient ID")
+                    st.markdown("OR")
+                    f, l, d = st.columns(3)
+                    with f:
+                        f_name = st.text_input("First Name")
+                    with l:
+                        l_name = st.text_input("Last Name")
+                    with d:
+                        dob = st.date_input(label="Date of Birth", min_value=datetime(1900, 1, 1), max_value=datetime.now(), value=None)
+                    submit_patient = st.form_submit_button("Search Patient")
+                    if submit_patient:
+                        if patient_id and (f_name or l_name or dob):
+                            st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
                             st.stop()
-                        else:
-                            patient = patient[0]
-                    elif f_name and l_name and dob:
-                        patient = search_patient(first_name=f_name, last_name=l_name, dob=dob)
-                        if not patient:
-                            st.error("No Patients found with the given information.")
-                            st.stop()
-                        else:
-                            patient = patient[0]
+                        elif patient_id:
+                            patient = search_patient(id=patient_id)
+                            if not patient:
+                                st.error("No Patients found with the given ID.")
+                                st.stop()
+                            else:
+                                patient = patient[0]
+                        elif f_name and l_name and dob:
+                            patient = search_patient(first_name=f_name, last_name=l_name, dob=dob)
+                            if not patient:
+                                st.error("No Patients found with the given information.")
+                                st.stop()
+                            else:
+                                patient = patient[0]
+
+            patient_form()
         else:
             patients = search_patient()
             patients_ids = [patient["id"] for patient in patients]
@@ -308,11 +312,11 @@ def render_search_patient_form():
     return patient
 
 
-def render_search_practitioner_form():
+def render_search_practitioner_form(practitioner_id=None):
     pract_l, pract_r = st.columns([0.5, 3.5])
-    practitioner_id = None
     with pract_l:
-        has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
+        idx = 0 if practitioner_id else 1
+        has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=idx, horizontal=True)
     with pract_r:
         if has_practitioner_id == "Yes":
             with st.form(key='practitioner_form'):
