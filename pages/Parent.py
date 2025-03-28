@@ -30,7 +30,9 @@ def search_immunization_schedule(patient_id):
     res = [s.serialize() for s in schedule]
     return res
 
-patient = utils.render_search_patient_form()
+
+utils.render_search_patient_form()
+patient = st.session_state['patient']
 
 # patient = None
 # patient_l, patient_r = st.columns([1, 3])

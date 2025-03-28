@@ -304,7 +304,7 @@ def render_search_patient_form():
             patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
             patient = patients[patients_ids.index(patient)]
 
-    return patient
+    st.session_state['patient'] = patient
 
 
 @st.fragment()
@@ -329,4 +329,4 @@ def render_search_practitioner_form():
             practitioner_ids = search_practitioner()
             practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
-    return practitioner_id
+    st.session_state['practitioner_id'] = practitioner_id
