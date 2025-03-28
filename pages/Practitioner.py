@@ -355,8 +355,30 @@ def fetch_cdc_schedule_from_fhir():
 st.title("CDC Immunization Schedule Reminder")
 st.markdown("You are logged in as **Clinician**")
 
-practitioner_id = utils.render_search_practitioner_form()
-# patient = utils.render_search_patient_form() if practitioner_id is not None else None
+practitioner_id = None
+pract_l, pract_r = st.columns([0.5, 3.5])
+with pract_l:
+    idx = 0 if practitioner_id else 1
+    has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=idx, horizontal=True)
+with pract_r:
+    if has_practitioner_id == "Yes":
+        with st.form(key='practitioner_form'):
+            practitioner_id_input = st.text_input("Enter Practitioner ID")
+            submit_practitioner = st.form_submit_button("Search Practitioner")
+            if submit_practitioner:
+                if practitioner_id_input:
+                    practitioner_id = utils.search_practitioner(practitioner_id_input)
+                    st.session_state['practitioner_id'] = practitioner_id
+                    if not practitioner_id:
+                        st.error("No Practitioner found with the given ID.")
+                        st.stop()
+                else:
+                    st.error("Please enter a Practitioner ID.")
+                    st.stop()
+    else:
+        practitioner_ids = utils.search_practitioner()
+        practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
+
 patient = None
 if practitioner_id:
     patient_l, patient_r = st.columns([0.5, 3.5])
