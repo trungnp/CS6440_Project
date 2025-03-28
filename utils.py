@@ -236,7 +236,6 @@ def check_and_send_email():
         # else:
         #     st.write(f"  Notification date has passed")
 
-@st.cache_data(ttl=600)
 def search_practitioner(id=None):
     """
     Search for practitioners by name or identifier.
