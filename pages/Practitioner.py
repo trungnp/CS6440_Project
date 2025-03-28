@@ -399,7 +399,6 @@ if practitioner_id is not None:
     #         patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
     #         patient = patients[patients_ids.index(patient)]
 
-st.write(patient)
 if patient is not None:
     results = assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=False)
     results_as_dict = [
