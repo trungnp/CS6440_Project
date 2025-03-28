@@ -357,9 +357,7 @@ st.markdown("You are logged in as **Clinician**")
 
 practitioner_id = utils.render_search_practitioner_form()
 
-patient = None
-if practitioner_id:
-    patient = utils.render_search_patient_form()
+patient = utils.render_search_patient_form()
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:
     #     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
