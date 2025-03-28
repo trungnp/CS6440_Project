@@ -258,20 +258,20 @@ def render_search_patient_form():
                     if patient_id and (f_name or l_name or dob):
                         st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
                     elif patient_id:
-                        patient = utils.search_patient(id=patient_id)
+                        patient = search_patient(id=patient_id)
                         if not patient:
                             st.error("No Patients found with the given ID.")
                         else:
                             patient = patient[0]
                     elif f_name and l_name and dob:
-                        patient = utils.search_patient(first_name=f_name, last_name=l_name, dob=dob)
+                        patient = search_patient(first_name=f_name, last_name=l_name, dob=dob)
                         if not patient:
                             st.error("No Patients found with the given information.")
                         else:
                             patient = patient[0]
 
         else:
-            patients = utils.search_patient()
+            patients = search_patient()
             patients_ids = [patient["id"] for patient in patients]
             patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
             patient = patients[patients_ids.index(patient)]
