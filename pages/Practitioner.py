@@ -360,7 +360,7 @@ practitioner_id = st.session_state['practitioner_id'] if 'practitioner_id' in st
 # patient = st.session_state['patient'] if 'patient' in st.session_state else None
 if practitioner_id is not None:
     utils.render_search_patient_form()
-patient = st.session_state['patient']
+patient = st.session_state['patient'] if 'patient' in st.session_state else None
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:
     #     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
