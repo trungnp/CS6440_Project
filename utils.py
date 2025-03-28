@@ -237,6 +237,7 @@ def check_and_send_email():
         #     st.write(f"  Notification date has passed")
 
 
+st.fragment()
 def read_schedule_from_csv():
     try:
         return pd.read_csv("schedule.csv", header=0)
@@ -287,3 +288,28 @@ def render_search_patient_form():
             patient = patients[patients_ids.index(patient)]
 
     return patient
+
+
+@st.fragment()
+def render_search_practitioner_form():
+    pract_l, pract_r = st.columns([0.5, 3.5])
+    practitioner_id = None
+    with pract_l:
+        has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
+    with pract_r:
+        if has_practitioner_id == "Yes":
+            with st.form(key='practitioner_form'):
+                practitioner_id_input = st.text_input("Enter Practitioner ID")
+                submit_practitioner = st.form_submit_button("Search Practitioner")
+                if submit_practitioner:
+                    if practitioner_id_input:
+                        practitioner_id = search_practitioner(practitioner_id_input)
+                        if not practitioner_id:
+                            st.error("No Practitioner found with the given ID.")
+                    else:
+                        st.error("Please enter a Practitioner ID.")
+        else:
+            practitioner_ids = search_practitioner()
+            practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
+
+    return practitioner_id
