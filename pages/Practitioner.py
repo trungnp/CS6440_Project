@@ -8,7 +8,6 @@ import streamlit as st
 import utils
 
 st.set_page_config(page_title="CDC Immunization Schedule Reminder", layout="wide")
-st.markdown("You are logged in as **Clinician**")
 client = utils.get_fhir_client()
 
 # CDC group identifier
@@ -371,6 +370,7 @@ def fetch_cdc_schedule_from_fhir():
 
 # Streamlit app
 st.title("CDC Immunization Schedule Reminder")
+st.markdown("You are logged in as **Clinician**")
 pract_l, pract_r = st.columns([0.5, 3.5])
 practitioner_id = None
 with pract_l:
