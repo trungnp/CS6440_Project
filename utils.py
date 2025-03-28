@@ -4,7 +4,12 @@ from datetime import datetime, timedelta
 import smtplib
 from email.mime.text import MIMEText
 
-client = st.session_state["client"]
+
+def get_fhir_client():
+    if 'client' not in st.session_state:
+        st.session_state.client = SyncFHIRClient('https://hapi.fhir.org/baseR4')
+
+    return st.session_state.client
 
 
 def is_over_18(dob: datetime):
@@ -58,6 +63,7 @@ def search_patient(count=10, under_age=18, id=None, first_name=None, last_name=N
         }
     else:
         st.error("Invalid parameters. Please provide either ID or First Name, Last Name, and DOB.")
+        st.stop()
 
     patients = client.resources('Patient').search(**params).limit(count).fetch()
     # patients = client.resources('Patient').search(birthdate=f'gt{five_years_ago}').limit(count).fetch()
@@ -195,7 +201,7 @@ def write_schedule_to_csv(df):
 @st.fragment(run_every=10800)
 def check_and_send_email():
     df = pd.read_csv("schedule.csv", header=0)
-    df = df[df["is_sent"] == False]
+    df = df[df["is_sent"] is False]
     current_date = datetime.now().date()
     for idx, entry in df.iterrows():
         dose = entry["dose"]
@@ -214,7 +220,7 @@ def check_and_send_email():
                 df.loc[idx, "is_sent"] = True
                 df.to_csv("schedule.csv", index=False, header=True)
                 st.success(f"Reminder email sent to {email} for {vaccine_name}!")
-                st.stop()
+                # st.stop()
             else:
                 st.error(f"Failed to send email: {result}")
         #     if result is True:

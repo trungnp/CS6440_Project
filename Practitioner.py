@@ -8,8 +8,10 @@ import streamlit as st
 import utils
 
 st.set_page_config(page_title="CDC Immunization Schedule Reminder", layout="wide")
-client = utils.get_fhir_client()
-
+# FHIR server setup
+# FHIR_SERVER_URL = "https://hapi.fhir.org/baseR4"  # Local HAPI instance
+# client = SyncFHIRClient('https://hapi.fhir.org/baseR4')
+client = st.session_state["client"]
 # CDC group identifier
 CDC_GROUP_IDENTIFIER = {
     "value": "pnguyen332"

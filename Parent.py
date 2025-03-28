@@ -1,18 +1,18 @@
-import re
 from datetime import datetime, timedelta
 
-import pandas as pd
 import streamlit as st
 
 import utils
-from utils import check_and_send_email, write_schedule_to_csv
+from utils import search_patient, display_calendar, check_and_send_email, write_schedule_to_csv, send_email
+import pandas as pd
+import re
 
 st.set_page_config(page_title="CDC Immunization Schedule Reminder", layout="wide")
 st.title("CDC Immunization Schedule Reminder")
 
 st.markdown("You are logged in as **Parent**")
 
-client = utils.get_fhir_client()
+client = st.session_state["client"]
 
 
 def is_valid_email(email):
