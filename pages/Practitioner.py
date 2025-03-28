@@ -361,7 +361,7 @@ st.write("Practitioner ID: ", practitioner_id)
 patient = None
 if practitioner_id is not None:
     utils.render_search_patient_form()
-    patient = st.session_state['patient_id']
+    patient = st.session_state['patient']
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:
     #     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
