@@ -263,7 +263,6 @@ def read_schedule_from_csv():
         return None
 
 
-@st.fragment()
 def render_search_patient_form():
     patient = None
     patient_l, patient_r = st.columns([0.5, 3.5])
@@ -310,7 +309,6 @@ def render_search_patient_form():
     st.session_state['patient'] = patient
 
 
-@st.fragment()
 def render_search_practitioner_form():
     pract_l, pract_r = st.columns([0.5, 3.5])
     practitioner_id = None
