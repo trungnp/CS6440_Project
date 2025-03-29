@@ -74,6 +74,7 @@ if patient:
             }
             for _schedule in schedule for rec in _schedule["recommendation"]
         ]
+
         # events1 = []
         # for _, row in df.iterrows():
         #     date_range = row["recommended_date"].replace("/", "-").split(" - ")
@@ -97,8 +98,8 @@ if patient:
         # else:
         # st.write(events1)
         # display_calendar(events1)
-        schedule, health_record = st.tabs(["Immunization Schedule", "Health Record Chart"])
-        with schedule:
+        schedule_tab, health_record_tab = st.tabs(["Immunization Schedule", "Health Record Chart"])
+        with schedule_tab:
             st.header("Immunization Recommendation Schedule")
             ident_col, patient_col, first_col, last_col, dob_col, date_col = st.columns(6)
             with ident_col:
@@ -116,7 +117,6 @@ if patient:
 
             df = pd.DataFrame(schedule_as_dict).sort_values("recommended_date")
             st.dataframe(df, hide_index=True)
-
             with st.form(key='reminder_form'):
                 e_label, email_col, d_label, d_col, send_btn = st.columns([3, 6, 0.7, 0.5, 1])
                 with e_label:
@@ -170,5 +170,5 @@ if patient:
                         #         st.write(f"  Notification date has passed")
                     else:
                         st.error("Please enter your email and number of days ahead to follow schedule.")
-        with health_record:
+        with health_record_tab:
             st.write("Health Record Chart")
