@@ -74,23 +74,6 @@ if patient:
             }
             for _schedule in schedule for rec in _schedule["recommendation"]
         ]
-        st.header("Immunization Recommendation Schedule")
-        st.header("Immunization Recommendation Schedule")
-        ident_col, patient_col, first_col, last_col, dob_col, date_col = st.columns(6)
-        with ident_col:
-            st.markdown(f'Group Identifier: **{schedule[0]["identifier"][0]["value"]}**', unsafe_allow_html=True)
-        with patient_col:
-            st.write(f'Patient: **{schedule[0]["patient"]["reference"]}**')
-        with first_col:
-            st.write(f'Patient First Name: **{patient["name"][0]["given"][0]}**')
-        with last_col:
-            st.write(f'Patient Last Name: **{patient["name"][0]["family"]}**')
-        with dob_col:
-            st.write(f'Patient DOB: **{patient["birthDate"]}**')
-        with date_col:
-            st.write(f'Created Date: **{schedule[0]["date"]}**')
-
-        df = pd.DataFrame(schedule_as_dict).sort_values("recommended_date")
         # events1 = []
         # for _, row in df.iterrows():
         #     date_range = row["recommended_date"].replace("/", "-").split(" - ")
@@ -116,7 +99,24 @@ if patient:
         # display_calendar(events1)
         schedule, health_record = st.tabs(["Immunization Schedule", "Health Record Chart"])
         with schedule:
+            st.header("Immunization Recommendation Schedule")
+            ident_col, patient_col, first_col, last_col, dob_col, date_col = st.columns(6)
+            with ident_col:
+                st.markdown(f'Group Identifier: **{schedule[0]["identifier"][0]["value"]}**', unsafe_allow_html=True)
+            with patient_col:
+                st.write(f'Patient: **{schedule[0]["patient"]["reference"]}**')
+            with first_col:
+                st.write(f'Patient First Name: **{patient["name"][0]["given"][0]}**')
+            with last_col:
+                st.write(f'Patient Last Name: **{patient["name"][0]["family"]}**')
+            with dob_col:
+                st.write(f'Patient DOB: **{patient["birthDate"]}**')
+            with date_col:
+                st.write(f'Created Date: **{schedule[0]["date"]}**')
+
+            df = pd.DataFrame(schedule_as_dict).sort_values("recommended_date")
             st.dataframe(df, hide_index=True)
+
             with st.form(key='reminder_form'):
                 e_label, email_col, d_label, d_col, send_btn = st.columns([3, 6, 0.7, 0.5, 1])
                 with e_label:
