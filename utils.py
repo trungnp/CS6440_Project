@@ -322,7 +322,7 @@ def render_search_practitioner_form():
                 if submit_practitioner:
                     if practitioner_id_input:
                         practitioner_id = search_practitioner(practitioner_id_input)
-                        st.session_state['practitioner_id'] = practitioner_id
+                        st.session_state['practitioner_id'] = practitioner_id[0]
                         if not practitioner_id:
                             st.error("No Practitioner found with the given ID.")
                             st.stop()

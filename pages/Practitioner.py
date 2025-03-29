@@ -379,7 +379,7 @@ practitioner_id = st.session_state['practitioner_id']
 #         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
 if st.session_state.get("practitioner_id_input", None) or st.session_state.get("practitioner_id_select", None):
-    st.markdown("You are now logged in as **Practitioner** with ID: **" + practitioner_id[0] + "**")
+    st.markdown("You are now logged in as **Practitioner** with ID: **" + practitioner_id + "**")
     patient = utils.render_search_patient_form()
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:
