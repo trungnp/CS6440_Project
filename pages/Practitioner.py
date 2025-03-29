@@ -378,7 +378,7 @@ practitioner_id = st.session_state['practitioner_id']
 #         practitioner_ids = utils.search_practitioner()
 #         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
-if st.session_state["practitioner_id_input"] or st.session_state["practitioner_id_select"]:
+if "practitioner_id_input" in st.session_state or "practitioner_id_select" in st.session_state:
     patient = utils.render_search_patient_form()
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:
