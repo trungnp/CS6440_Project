@@ -317,7 +317,7 @@ def render_search_practitioner_form():
     with pract_r:
         if has_practitioner_id == "Yes":
             with st.form(key='practitioner_form'):
-                practitioner_id_input = st.text_input("Enter Practitioner ID")
+                practitioner_id_input = st.text_input("Enter Practitioner ID", key="practitioner_id_input")
                 submit_practitioner = st.form_submit_button("Search Practitioner")
                 if submit_practitioner:
                     if practitioner_id_input:
@@ -331,6 +331,6 @@ def render_search_practitioner_form():
                         st.stop()
         else:
             practitioner_ids = search_practitioner()
-            practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
+            practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids, key="practitioner_id_select")
             st.session_state['practitioner_id'] = practitioner_id
 
