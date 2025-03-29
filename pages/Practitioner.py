@@ -378,7 +378,7 @@ practitioner_id = st.session_state['practitioner_id']
 #         practitioner_ids = utils.search_practitioner()
 #         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
-if practitioner_id is not None or st.session_state['has_patient_id'] != "Yes":
+if practitioner_id is not None:
     patient = utils.render_search_patient_form()
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:

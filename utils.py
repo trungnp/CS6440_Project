@@ -333,3 +333,4 @@ def render_search_practitioner_form():
             practitioner_ids = search_practitioner()
             practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
             st.session_state['practitioner_id'] = practitioner_id
+
