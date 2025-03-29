@@ -75,11 +75,16 @@ if patient:
             for _schedule in schedule for rec in _schedule["recommendation"]
         ]
         st.header("Immunization Recommendation Schedule")
-        ident_col, patient_col, dob_col, date_col = st.columns(4)
+        st.header("Immunization Recommendation Schedule")
+        ident_col, patient_col, first_col, last_col, dob_col, date_col = st.columns(6)
         with ident_col:
             st.markdown(f'Group Identifier: **{schedule[0]["identifier"][0]["value"]}**', unsafe_allow_html=True)
         with patient_col:
             st.write(f'Patient: **{schedule[0]["patient"]["reference"]}**')
+        with first_col:
+            st.write(f'Patient First Name: **{patient["name"][0]["given"][0]}**')
+        with last_col:
+            st.write(f'Patient Last Name: **{patient["name"][0]["family"]}**')
         with dob_col:
             st.write(f'Patient DOB: **{patient["birthDate"]}**')
         with date_col:
