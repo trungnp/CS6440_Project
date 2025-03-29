@@ -353,7 +353,7 @@ def fetch_cdc_schedule_from_fhir():
 
 # Streamlit app
 st.title("CDC Immunization Schedule Reminder")
-st.markdown("You are logged in as **Clinician**")
+st.markdown("This page is used by **Clinician**")
 
 utils.render_search_practitioner_form()
 practitioner_id = st.session_state['practitioner_id']
@@ -379,6 +379,7 @@ practitioner_id = st.session_state['practitioner_id']
 #         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
 if st.session_state.get("practitioner_id_input", None) or st.session_state.get("practitioner_id_select", None):
+    st.markdown("You are now logged in as **Practitioner** with ID: **" + str(practitioner_id) + "**")
     patient = utils.render_search_patient_form()
     # patient_l, patient_r = st.columns([0.5, 3.5])
     # with patient_l:
