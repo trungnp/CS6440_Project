@@ -205,7 +205,7 @@ def write_schedule_to_csv(df):
 @st.fragment(run_every=10800)
 def check_and_send_email():
     df = pd.read_csv("schedule.csv", header=0)
-    df = df[df["is_sent"] is False]
+    df = df[df["is_sent"] == False]
     current_date = datetime.now().date()
     for idx, entry in df.iterrows():
         dose = entry["dose"]
