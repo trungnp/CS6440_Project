@@ -16,7 +16,6 @@ client = utils.get_fhir_client()
 
 
 def is_valid_email(email):
-    # Regular expression for validating an email
     regex = r'^\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     if re.match(regex, email):
         return True
@@ -32,30 +31,6 @@ def search_immunization_schedule(patient_id):
 
 
 patient = utils.render_search_patient_form()
-
-# patient = None
-# patient_l, patient_r = st.columns([1, 3])
-# with patient_l:
-#     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
-# with patient_r:
-#     if has_patient_id == "Yes":
-#         with st.form(key='patient_form'):
-#             patient_id = st.text_input("Enter Patient ID")
-#             submit_patient = st.form_submit_button("Search Patient")
-#             if submit_patient:
-#                 if patient_id:
-#                     patient = search_patient(id=patient_id)
-#                     if not patient:
-#                         st.error("No Patients found with the given ID.")
-#                     else:
-#                         patient = patient[0]
-#                 else:
-#                     st.error("Please enter a Patient ID.")
-#     else:
-#         patients = search_patient()
-#         patients_ids = [patient["id"] for patient in patients]
-#         patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
-#         patient = patients[patients_ids.index(patient)]
 
 if patient:
     schedule = search_immunization_schedule(patient['id'])
@@ -75,29 +50,6 @@ if patient:
             for _schedule in schedule for rec in _schedule["recommendation"]
         ]
 
-        # events1 = []
-        # for _, row in df.iterrows():
-        #     date_range = row["recommended_date"].replace("/", "-").split(" - ")
-        #     events1.append({
-        #         "title": row['vaccine'],
-        #         "start": date_range[0] + "T00:00:00",
-        #         "end": date_range[1] + "T23:59:59" if len(date_range) > 1 else date_range[0] + "T23:59:59",
-        #         "description": row["description"],
-        #         "allDay": True,
-        #         "extendedProps": {
-        #             "disease": row["disease"],
-        #             "dose": row["dose"],
-        #             "series": row["series"],
-        #             "description": row["description"]
-        #         }
-        #     })
-        # utils.display_calendar(events)
-        # scheule_view_mode = st.selectbox("View Mode", ["Table", "Calendar"], index=1)
-        # if scheule_view_mode == "Table":
-        # st.dataframe(df, hide_index=True)
-        # else:
-        # st.write(events1)
-        # display_calendar(events1)
         schedule_tab, health_record_tab = st.tabs(["Immunization Schedule", "Health Record Chart"])
         with schedule_tab:
             st.header("Immunization Recommendation Schedule")
@@ -141,34 +93,7 @@ if patient:
                         write_schedule_to_csv(df)
                         st.success("Followed successfully!")
                         check_and_send_email()
-
-                        # st.write(f"Schedule for {email} (Notifications {day_ahead} days ahead):")
-                        # current_date = datetime.now().date()
-                        #
-                        # for _, entry in df.iterrows():
-                        #     vaccine_name = entry["vaccine"]
-                        #     if '-' in entry["recommended_date"]:
-                        #         date_to_get = datetime.strptime(entry["recommended_date"].split(" - ")[0], "%Y-%m-%d").date()
-                        #     else:
-                        #         date_to_get = datetime.strptime(entry["recommended_date"], "%Y-%m-%d").date()
-                        #     dose = entry["dose"]
-                        #     notification_date = date_to_get - timedelta(days=day_ahead)
-                        #
-                        #     st.write(f"- **{vaccine_name}**: {date_to_get} (Dose: {dose})")
-                        #     st.write(f"  Notification date: {notification_date}")
-                        #
-                        #     # Check if today is the notification date
-                        #     if current_date == notification_date:
-                        #         result = follow(email, vaccine_name, entry["date_to_get"], dose)
-                        #         if result is True:
-                        #             st.success(f"Reminder email sent to {email} for {vaccine_name}!")
-                        #         else:
-                        #             st.error(f"Failed to send email: {result}")
-                        #     elif current_date < notification_date:
-                        #         st.write(f"  Reminder will be available on {notification_date}")
-                        #     else:
-                        #         st.write(f"  Notification date has passed")
                     else:
                         st.error("Please enter your email and number of days ahead to follow schedule.")
         with health_record_tab:
-            st.write("Health Record Chart")
+            utils.render_health_record_charts(patient['id'])

@@ -10,12 +10,10 @@ import utils
 st.set_page_config(page_title="CDC Immunization Schedule Reminder", layout="wide")
 client = utils.get_fhir_client()
 
-# CDC group identifier
 CDC_GROUP_IDENTIFIER = {
     "value": "pnguyen332"
 }
 
-# Simplified CDC immunization schedule data
 cdc_schedule = [
     {
         "vaccine": "Covid-19",
@@ -213,43 +211,11 @@ cdc_schedule = [
 
 
 def search_patients_by_practitioner(practitioner_id):
-    """
-    Search for patients assigned to a specific practitioner.
-
-    :param practitioner_id: The ID of the practitioner.
-    :return: A list of patients assigned to the practitioner.
-    """
     patients = client.resources('Patient').search(general_practitioner=practitioner_id).fetch()
     return patients if patients else []
 
 
-
-# @st.cache_data(ttl=600)
-# def search_patient(count=10, under_age=18, id=None):
-#     """
-#     Fetch all patients under 5 years old using FHIR search
-#     """
-#     if under_age > 18:
-#         st.error("Only patients under 18 years old are supported.")
-#         return
-#
-#     five_years_ago = (datetime.now() - timedelta(days=under_age * 365)).strftime('%Y-%m-%d')
-#     params = {
-#         "birthdate": f'gt{five_years_ago}',
-#     }
-#     if id is not None:
-#         params['_id'] = id
-#
-#     patients = client.resources('Patient').search(**params).limit(count).fetch()
-#     # patients = client.resources('Patient').search(birthdate=f'gt{five_years_ago}').limit(count).fetch()
-#     patients_list = [patient.serialize() for patient in patients]
-#
-#
-#     return patients_list
-
-
 def calculate_date_criterion(patient_dob, age):
-    """Calculate the date criterion based on patient date of birth and age."""
     dob = datetime.strptime(patient_dob, "%Y-%m-%d")
     if "-" in age:
         start_age, end_age = age.split("-")
@@ -261,7 +227,6 @@ def calculate_date_criterion(patient_dob, age):
 
 
 def add_age_to_date(dob, age):
-    """Add age to date of birth."""
     if "M" in age:
         months = int(age.replace("M", ""))
         return dob + dateutil.relativedelta.relativedelta(months=months)
@@ -271,25 +236,20 @@ def add_age_to_date(dob, age):
     else:
         return dob
 
+
 @st.cache_data(ttl=600)
 def assign_immunization_recommendation_to_patient(cdc_schedule, patient_id, patient_dob, do_upload=False, do_delete=False):
-    # Delete existing immunization recommendations for the patient
     if do_delete:
         existing_recommendations = client.resources("ImmunizationRecommendation").search(
             patient=f"Patient/{patient_id}",
             identifier=f"{CDC_GROUP_IDENTIFIER['value']}"
         ).fetch_all()
-        # st.write(existing_recommendations)
         for recommendation in existing_recommendations:
             try:
                 client.delete("ImmunizationRecommendation", recommendation.id)
-                # st.success("Successfully deleted existing recommendations.")
             except fhirpy.base.exceptions.OperationOutcome:
                 pass
-                # st.success("Successfully deleted existing recommendations.")
 
-
-    # Upload the CDC schedule to the FHIR server with a group identifier.
     results = []
 
     for vaccine in cdc_schedule:
@@ -336,9 +296,7 @@ def assign_immunization_recommendation_to_patient(cdc_schedule, patient_id, pati
 
 
 def fetch_cdc_schedule_from_fhir():
-    """Retrieve only CDC schedule ImmunizationRecommendations using the group identifier."""
     try:
-        # Search by the CDC group identifier
         resources = client.resources("ImmunizationRecommendation").search(
             identifier=f"{'|'.join([identifier for identifier in CDC_GROUP_IDENTIFIER.values()])}"
         ).fetch()
@@ -351,73 +309,15 @@ def fetch_cdc_schedule_from_fhir():
         return [{"error": str(e)}]
 
 
-# Streamlit app
 st.title("CDC Immunization Schedule Reminder")
 st.markdown("This page is used by **Clinician**")
 
 utils.render_search_practitioner_form()
 practitioner_id = st.session_state['practitioner_id']
-# pract_l, pract_r = st.columns([0.5, 3.5])
-# with pract_l:
-#     has_practitioner_id = st.radio("Do you have a Practitioner ID?", ["Yes", "No"], index=0, horizontal=True)
-# with pract_r:
-#     if has_practitioner_id == "Yes":
-#         with st.form(key='practitioner_form'):
-#             practitioner_id_input = st.text_input("Enter Practitioner ID")
-#             submit_practitioner = st.form_submit_button("Search Practitioner")
-#             if submit_practitioner:
-#                 if practitioner_id_input:
-#                     practitioner_id = utils.search_practitioner(practitioner_id_input)
-#                     if not practitioner_id:
-#                         st.error("No Practitioner found with the given ID.")
-#                         st.stop()
-#                 else:
-#                     st.error("Please enter a Practitioner ID.")
-#                     st.stop()
-#     else:
-#         practitioner_ids = utils.search_practitioner()
-#         practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids)
 
 if st.session_state.get("practitioner_id_input", None) or st.session_state.get("practitioner_id_select", None):
     st.markdown("You are now logged in as **Practitioner** with ID: **" + practitioner_id + "**")
     patient = utils.render_search_patient_form()
-    # patient_l, patient_r = st.columns([0.5, 3.5])
-    # with patient_l:
-    #     has_patient_id = st.radio("Do you have a Patient ID?", ["Yes", "No"], index=0, horizontal=True)
-    # with patient_r:
-    #     if has_patient_id == "Yes":
-    #         with st.form(key='patient_form'):
-    #             patient_id = st.text_input("Enter Patient ID")
-    #             st.markdown("OR")
-    #             f, l, d = st.columns(3)
-    #             with f:
-    #                 f_name = st.text_input("First Name")
-    #             with l:
-    #                 l_name = st.text_input("Last Name")
-    #             with d:
-    #                 dob = st.date_input(label="Date of Birth", min_value=datetime(1900, 1, 1), max_value=datetime.now(), value=None)
-    #             submit_patient = st.form_submit_button("Search Patient")
-    #             if submit_patient:
-    #                 if patient_id and (f_name or l_name or dob):
-    #                     st.error("Please search by either Patient ID or First Name, Last Name, and DOB.")
-    #                 elif patient_id:
-    #                     patient = utils.search_patient(id=patient_id)
-    #                     if not patient:
-    #                         st.error("No Patients found with the given ID.")
-    #                     else:
-    #                         patient = patient[0]
-    #                 elif f_name and l_name and dob:
-    #                     patient = utils.search_patient(first_name=f_name, last_name=l_name, dob=dob)
-    #                     if not patient:
-    #                         st.error("No Patients found with the given information.")
-    #                     else:
-    #                         patient = patient[0]
-    #
-    #     else:
-    #         patients = utils.search_patient()
-    #         patients_ids = [patient["id"] for patient in patients]
-    #         patient = st.selectbox("Select Patient (for testing purpose)", patients_ids)
-    #         patient = patients[patients_ids.index(patient)]
 
     if patient is not None:
         results = assign_immunization_recommendation_to_patient(cdc_schedule, patient['id'], patient['birthDate'], do_upload=False)
@@ -460,8 +360,10 @@ if st.session_state.get("practitioner_id_input", None) or st.session_state.get("
                 else:
                     st.error("Please select a Patient and Practitioner to assign the schedule.")
 
+
         schedule, health_record = st.tabs(["Immunization Schedule", "Health Record Chart"])
         with schedule:
             display_schedule(results, results_as_dict, patient, practitioner_id)
         with health_record:
             st.write("Health Record Chart")
+            utils.render_health_record_charts(results[0]["patient"]["reference"].split("/")[1])

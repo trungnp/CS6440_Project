@@ -1,7 +1,9 @@
 import pandas as pd
 import streamlit as st
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import smtplib
+import plotly.express as px
+import plotly.graph_objects as go
 from email.mime.text import MIMEText
 from fhirpy import SyncFHIRClient
 
@@ -16,30 +18,18 @@ def get_fhir_client():
 client = get_fhir_client()
 
 
-def is_over_18(dob: datetime):
-    # Current date: March 19, 2025
-    current_date = datetime.now()
-
+# Function to calculate age from birthdate
+def calculate_age(birth_date_str, current_date):
     try:
-        # Parse the DOB string (assuming format YYYY-MM-DD)
-        # dob = datetime.strptime(dob_str, '%Y-%m-%d')
-
-        # Calculate age
-        age = current_date.year - dob.year
-
-        # Adjust age if birthday hasn't occurred this year
-        if (current_date.month, current_date.day) < (dob.month, dob.day):
-            age -= 1
-
-        # Check if under 18
-        return age >= 18
-
-    except ValueError:
-        return "Invalid date format. Please use YYYY-MM-DD"
+        birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+        age = (current_date - birth_date).days // 365  # Approximate age in years
+        return age
+    except (ValueError, TypeError):
+        return None
 
 
 @st.cache_data(ttl=600)
-def search_patient(count=10, under_age=18, id=None, first_name=None, last_name=None, dob: datetime = None):
+def search_patient(id=None, first_name=None, last_name=None, dob: datetime = None):
     """
     Fetch all patients under 5 years old using FHIR search
     """
@@ -52,9 +42,16 @@ def search_patient(count=10, under_age=18, id=None, first_name=None, last_name=N
     #     return
 
     if id is None and first_name is None and last_name is None and dob is None:
-        params = {
-            "birthdate": f"gt{(datetime.now() - timedelta(days=under_age * 365)).strftime('%Y-%m-%d')}"
-        }
+        # patients_df = pd.read_csv('patients.csv')
+        patients_df = pd.read_csv('patients_with_observation.csv')
+        random_patients = patients_df.sample(n=10).values.flatten().tolist()
+        patients_list = []
+        for id in random_patients:
+            p = client.resources('Patient').search(**{"_id":id}).fetch()
+            for _p in p:
+                patients_list.append(_p.serialize())
+
+        return patients_list
     elif id is not None:
         params = {
             "_id": id
@@ -69,8 +66,7 @@ def search_patient(count=10, under_age=18, id=None, first_name=None, last_name=N
         st.error("Invalid parameters. Please provide either ID or First Name, Last Name, and DOB.")
         st.stop()
 
-    patients = client.resources('Patient').search(**params).limit(count).fetch()
-    # patients = client.resources('Patient').search(birthdate=f'gt{five_years_ago}').limit(count).fetch()
+    patients = client.resources('Patient').search(**params).fetch()
     patients_list = [patient.serialize() for patient in patients]
 
     return patients_list
@@ -181,18 +177,6 @@ def write_schedule_to_csv(df):
         return
 
     if current_schedule.shape[0] > 0:
-        # new_patient = tuple(df[['patient_id', 'email']].values[0])
-        # patient_found = False
-        # for _, row in current_schedule[['patient_id', 'email']].drop_duplicates().iterrows():
-        #     if (row['patient_id'], row['email']) == new_patient:
-        #         patient_found = True
-        #         break
-        #
-        # if patient_found:
-        #     current_schedule = current_schedule[
-        #         (current_schedule['patient_id'] != new_patient[0]) |
-        #         (current_schedule['email'] != new_patient[1])
-        #         ]
 
         new_email = df['email'].values[0]
         if new_email in current_schedule['email'].values:
@@ -334,3 +318,189 @@ def render_search_practitioner_form():
             practitioner_id = st.selectbox("Select Practitioner ID (for testing purpose)", practitioner_ids, key="practitioner_id_select")
             st.session_state['practitioner_id'] = practitioner_id
 
+
+def render_health_record_charts(patient_id):
+    observations = client.resources('Observation').search(patient=f'Patient/{patient_id}', identifier='pnguyen332').fetch_all()
+    heights = {'date': [], 'value': [], 'unit': []}
+    weights = {'date': [], 'value': [], 'unit': []}
+    heart_rates = {'date': [], 'value': [], 'unit': []}
+    systolic = {'date': [], 'value': [], 'unit': []}
+    diastolic = {'date': [], 'value': [], 'unit': []}
+    bmi = {'date': [], 'value': [], 'unit': []}
+
+    for obs in observations:
+        if obs.code.coding[0].code == "8302-2":
+            heights['value'].append(obs.valueQuantity.value)
+            heights['date'].append(obs.effectiveDateTime)
+            heights['unit'].append(obs.valueQuantity.unit)
+        elif obs.code.coding[0].code == "29463-7":
+            weights['date'].append(obs.effectiveDateTime)
+            weights['value'].append(obs.valueQuantity.value)
+            weights['unit'].append(obs.valueQuantity.unit)
+        elif obs.code.coding[0].code == "8867-4":
+            heart_rates['date'].append(obs.effectiveDateTime)
+            heart_rates['value'].append(obs.valueQuantity.value)
+            heart_rates['unit'].append(obs.valueQuantity.unit)
+        elif obs.code.coding[0].code == "85354-9":
+            for _obs in obs.component:
+                if _obs.code.coding[0].code == "8480-6":
+                    systolic['value'].append(_obs.valueQuantity.value)
+                    systolic['date'].append(obs.effectiveDateTime)
+                    systolic['unit'].append(_obs.valueQuantity.unit)
+                elif _obs.code.coding[0].code == "8462-4":
+                    diastolic['value'].append(_obs.valueQuantity.value)
+                    diastolic['date'].append(obs.effectiveDateTime)
+                    diastolic['unit'].append(_obs.valueQuantity.unit)
+        elif obs.code.coding[0].code == "39156-5":
+            bmi['value'].append(obs.valueQuantity.value)
+            bmi['date'].append(obs.effectiveDateTime)
+            bmi['unit'].append(obs.valueQuantity.unit)
+        else:
+            continue
+
+    data = {
+        'patient_id': patient_id,
+        'heights': heights,
+        'weights': weights,
+        'heart_rates': heart_rates,
+        'systolic': systolic,
+        'diastolic': diastolic,
+        'bmi': bmi
+    }
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        weight_df = pd.DataFrame(data['weights'])
+        height_df = pd.DataFrame(data['heights'])
+        df = height_df.merge(weight_df, on='date', suffixes=('_height', '_weight'))
+        st.markdown("#### Height and Weight Over Time")
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=df['date'],
+            y=df['value_height'],
+            name=f'Height ({height_df["unit"][0]})',
+            line=dict(color='lightgreen', width=2),
+            hovertemplate='%{y:.1f}<br>'
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=df['date'],
+            y=df['value_weight'],
+            name=f'Weight ({weight_df["unit"][0]})',
+            line=dict(color='red', width=2),
+            hovertemplate='%{y:.1f}<br>',
+            yaxis='y2'
+        ))
+
+        # Update layout for dual y-axes
+        fig.update_layout(
+            xaxis=dict(title='Date', tickformat='%Y-%m-%d'),
+            yaxis=dict(
+                title=f'Height ({height_df["unit"][0]})',
+                tickfont=dict(color='lightgreen')
+            ),
+            yaxis2=dict(
+                title=f'Weight ({weight_df["unit"][0]})',
+                tickfont=dict(color='red'),
+                anchor='x',
+                overlaying='y',
+                side='right'
+            ),
+            hovermode='x unified',
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=1.02,
+                xanchor='right',
+                x=1
+            ),
+            margin=dict(l=20, r=20, t=40, b=20),
+            height=300
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        bmi_df = pd.DataFrame(data['bmi'])
+        st.markdown("#### BMI Over Time")
+        fig_bmi = px.line(
+            bmi_df,
+            x='date',
+            y='value',
+            markers=True,
+            labels={"date": "Date", "value": f"BMI ({bmi_df['unit'][0]})"},
+            color_discrete_sequence=["#2ECC71"]
+        )
+
+        fig_bmi.add_shape(
+            type="line", line=dict(dash="dash", color="gray"), y0=18.5, y1=18.5, x0=0, x1=1, xref="paper"
+        )
+        fig_bmi.add_shape(
+            type="line", line=dict(dash="dash", color="gray"), y0=25, y1=25, x0=0, x1=1, xref="paper"
+        )
+        fig_bmi.add_shape(
+            type="line", line=dict(dash="dash", color="gray"), y0=30, y1=30, x0=0, x1=1, xref="paper"
+        )
+
+        fig_bmi.update_layout(height=300)
+        st.plotly_chart(fig_bmi, use_container_width=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        heart_rate_df = pd.DataFrame(data['heart_rates'])
+        st.markdown("#### Heart Rate Trend")
+        fig_hr = px.line(
+            heart_rate_df,
+            x='date',
+            y='value',
+            markers=True,
+            labels={"date": "Date", "value": f"Heart Rate ({heart_rate_df['unit'][0]})"},
+            color_discrete_sequence=["#E74C3C"]
+        )
+        fig_hr.update_layout(height=300)
+        st.plotly_chart(fig_hr, use_container_width=True)
+
+    with col2:
+        systolic = pd.DataFrame(data['systolic'])
+        diastolic = pd.DataFrame(data['diastolic'])
+        blood_pressure_df = systolic.merge(diastolic, on='date', suffixes=('_systolic', '_diastolic'))
+        st.markdown("#### Blood Pressure")
+        fig_bp = go.Figure()
+        fig_bp.add_trace(go.Scatter(
+            x=blood_pressure_df['date'],
+            y=blood_pressure_df['value_systolic'],
+            mode='lines+markers',
+            name='Systolic',
+            line=dict(color="#9B59B6"),
+            hovertemplate='%{y:.1f}<br>'
+        ))
+        fig_bp.add_trace(go.Scatter(
+            x=blood_pressure_df['date'],
+            y=blood_pressure_df['value_diastolic'],
+            mode='lines+markers',
+            name='Diastolic',
+            line=dict(color="#3498DB"),
+            hovertemplate='%{y:.1f}<br>'
+        ))
+        fig_bp.update_layout(
+            hovermode='x unified',
+            legend=dict(
+                orientation='h',
+                yanchor='bottom',
+                y=1.02,
+                xanchor='right',
+                x=1
+            ),
+            margin=dict(l=20, r=20, t=40, b=20),
+            height=300
+        )
+
+        fig_bp.update_layout(
+            height=300,
+            xaxis_title="Date",
+            yaxis_title=f"Blood Pressure ({blood_pressure_df['unit_systolic'][0]})",
+        )
+        st.plotly_chart(fig_bp, use_container_width=True)
