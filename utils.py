@@ -28,7 +28,7 @@ def calculate_age(birth_date_str, current_date):
         return None
 
 
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=60*60)
 def search_patient(id=None, first_name=None, last_name=None, dob: datetime = None):
     """
     Fetch all patients under 5 years old using FHIR search
