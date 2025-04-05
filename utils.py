@@ -28,7 +28,7 @@ def calculate_age(birth_date_str, current_date):
         return None
 
 
-@st.cache_data(ttl=600)
+# @st.cache_data(ttl=600)
 def search_patient(id=None, first_name=None, last_name=None, dob: datetime = None):
     """
     Fetch all patients under 5 years old using FHIR search
@@ -44,7 +44,7 @@ def search_patient(id=None, first_name=None, last_name=None, dob: datetime = Non
     if id is None and first_name is None and last_name is None and dob is None:
         # patients_df = pd.read_csv('patients.csv')
         patients_df = pd.read_csv('patients_with_observation.csv')
-        random_patients = patients_df.sample(n=10).values.flatten().tolist()
+        random_patients = patients_df.sample(n=10, random_state=1).values.flatten().tolist()
         patients_list = []
         for id in random_patients:
             p = client.resources('Patient').search(**{"_id":id}).fetch()
